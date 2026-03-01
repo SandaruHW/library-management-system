@@ -9,6 +9,8 @@ obj/
 *.userprefs
 *.db
 *.sqlite
+*.db-shm
+*.db-wal
 *.pdb
 .vs/
 *.cache
