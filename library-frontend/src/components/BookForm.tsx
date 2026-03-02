@@ -9,12 +9,33 @@ export interface BookFormData {
   description: string;
 }
 
+interface FormErrors {
+  title?: string;
+  author?: string;
+  year?: string;
+  genre?: string;
+}
+
 interface BookFormProps {
   open: boolean;
   onClose: () => void;
   onSubmit: (data: BookFormData) => void;
   initialData?: Book | null;
 }
+
+const GENRES = [
+  "Fiction", "Non-Fiction", "Science Fiction", "Fantasy", "Mystery",
+  "Thriller", "Biography", "History", "Science", "Technology",
+  "Self-Help", "Romance", "Horror", "Children's", "Poetry", "Drama", "Other",
+];
+
+const inputBase =
+  "mt-1 block w-full rounded-md border px-3 py-2 text-sm shadow-sm placeholder:text-gray-400 focus:outline-none focus:ring-1";
+const inputNormal = `${inputBase} border-gray-300 focus:border-indigo-500 focus:ring-indigo-500`;
+const inputError  = `${inputBase} border-red-400 focus:border-red-500 focus:ring-red-500`;
+
+const FieldError: React.FC<{ message?: string }> = ({ message }) =>
+  message ? <p className="mt-1 text-xs text-red-500">{message}</p> : null;
 
 const BookForm: React.FC<BookFormProps> = ({ open, onClose, onSubmit, initialData }) => {
   const [formData, setFormData] = useState<BookFormData>({
@@ -24,6 +45,7 @@ const BookForm: React.FC<BookFormProps> = ({ open, onClose, onSubmit, initialDat
     genre: "",
     description: "",
   });
+  const [errors, setErrors] = useState<FormErrors>({});
 
   useEffect(() => {
     if (initialData) {
@@ -43,40 +65,54 @@ const BookForm: React.FC<BookFormProps> = ({ open, onClose, onSubmit, initialDat
         description: "",
       });
     }
+    setErrors({});
   }, [initialData, open]);
 
-  const GENRES = [
-    "Fiction",
-    "Non-Fiction",
-    "Science Fiction",
-    "Fantasy",
-    "Mystery",
-    "Thriller",
-    "Biography",
-    "History",
-    "Science",
-    "Technology",
-    "Self-Help",
-    "Romance",
-    "Horror",
-    "Children's",
-    "Poetry",
-    "Drama",
-    "Other",
-  ];
+  const validate = (data: BookFormData): FormErrors => {
+    const errs: FormErrors = {};
+    if (!data.title.trim())
+      errs.title = "Title is required.";
+    else if (data.title.trim().length > 200)
+      errs.title = "Title cannot exceed 200 characters.";
+
+    if (!data.author.trim())
+      errs.author = "Author is required.";
+    else if (data.author.trim().length > 100)
+      errs.author = "Author cannot exceed 100 characters.";
+
+    if (!data.year)
+      errs.year = "Year is required.";
+    else if (data.year < 1000 || data.year > 2100)
+      errs.year = "Year must be between 1000 and 2100.";
+
+    if (!data.genre)
+      errs.genre = "Genre is required.";
+
+    return errs;
+  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
+    const updated = {
+      ...formData,
       [name]: name === "year" ? parseInt(value) || 0 : value,
-    }));
+    };
+    setFormData(updated);
+    // Clear the error for this field as the user types
+    if (errors[name as keyof FormErrors]) {
+      setErrors((prev) => ({ ...prev, [name]: undefined }));
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const errs = validate(formData);
+    if (Object.keys(errs).length > 0) {
+      setErrors(errs);
+      return;
+    }
     onSubmit(formData);
   };
 
@@ -112,7 +148,7 @@ const BookForm: React.FC<BookFormProps> = ({ open, onClose, onSubmit, initialDat
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} noValidate className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700">Title</label>
             <input
@@ -121,9 +157,9 @@ const BookForm: React.FC<BookFormProps> = ({ open, onClose, onSubmit, initialDat
               value={formData.title}
               onChange={handleChange}
               placeholder="Enter book title"
-              required
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className={errors.title ? inputError : inputNormal}
             />
+            <FieldError message={errors.title} />
           </div>
 
           <div>
@@ -134,9 +170,9 @@ const BookForm: React.FC<BookFormProps> = ({ open, onClose, onSubmit, initialDat
               value={formData.author}
               onChange={handleChange}
               placeholder="Enter author name"
-              required
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className={errors.author ? inputError : inputNormal}
             />
+            <FieldError message={errors.author} />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -148,8 +184,9 @@ const BookForm: React.FC<BookFormProps> = ({ open, onClose, onSubmit, initialDat
                 value={formData.year}
                 onChange={handleChange}
                 placeholder="Enter year"
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                className={errors.year ? inputError : inputNormal}
               />
+              <FieldError message={errors.year} />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">Genre</label>
@@ -157,14 +194,14 @@ const BookForm: React.FC<BookFormProps> = ({ open, onClose, onSubmit, initialDat
                 name="genre"
                 value={formData.genre}
                 onChange={handleChange}
-                required
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                className={errors.genre ? inputError : inputNormal}
               >
                 <option value="" disabled>Select genre</option>
                 {GENRES.map((g) => (
                   <option key={g} value={g}>{g}</option>
                 ))}
               </select>
+              <FieldError message={errors.genre} />
             </div>
           </div>
 
@@ -176,7 +213,7 @@ const BookForm: React.FC<BookFormProps> = ({ open, onClose, onSubmit, initialDat
               onChange={handleChange}
               placeholder="Enter book description"
               rows={3}
-              className="mt-1 block w-full resize-none rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className={`${inputNormal} resize-none`}
             />
           </div>
 
