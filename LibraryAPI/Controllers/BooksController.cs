@@ -39,6 +39,16 @@ namespace LibraryAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<Book>> CreateBook(Book book)
         {
+            // Check for duplicate: same title + author + year + genre (case-insensitive)
+            bool duplicate = await _context.Books.AnyAsync(b =>
+                b.Title.ToLower() == book.Title.ToLower() &&
+                b.Author.ToLower() == book.Author.ToLower() &&
+                b.Year == book.Year &&
+                b.Genre.ToLower() == book.Genre.ToLower());
+
+            if (duplicate)
+                return Conflict(new { message = $"{book.Title} by {book.Author} ({book.Year}, {book.Genre}) already exists." });
+
             _context.Books.Add(book);
             await _context.SaveChangesAsync();
 
@@ -51,6 +61,17 @@ namespace LibraryAPI.Controllers
         {
             if (id != book.Id)
                 return BadRequest();
+
+            // Check for duplicate among other records: same title + author + year + genre (case-insensitive)
+            bool duplicate = await _context.Books.AnyAsync(b =>
+                b.Id != id &&
+                b.Title.ToLower() == book.Title.ToLower() &&
+                b.Author.ToLower() == book.Author.ToLower() &&
+                b.Year == book.Year &&
+                b.Genre.ToLower() == book.Genre.ToLower());
+
+            if (duplicate)
+                return Conflict(new { message = $"{book.Title} by {book.Author} ({book.Year}, {book.Genre}) already exists." });
 
             _context.Entry(book).State = EntityState.Modified;
 
