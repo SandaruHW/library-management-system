@@ -66,6 +66,20 @@ const BooksPage: React.FC = () => {
   };
 
   const handleFormSubmit = async (data: BookFormData) => {
+    // Client-side duplicate guard: same title + author + year + genre (case-insensitive), excluding the book being edited
+    const isDuplicate = books.some(
+      (b) =>
+        b.title.toLowerCase() === data.title.trim().toLowerCase() &&
+        b.author.toLowerCase() === data.author.trim().toLowerCase() &&
+        b.year === data.year &&
+        b.genre.toLowerCase() === data.genre.toLowerCase() &&
+        b.id !== editingBook?.id
+    );
+    if (isDuplicate) {
+      setError(`"${data.title}" by ${data.author} (${data.year}, ${data.genre}) already exists.`);
+      return;
+    }
+
     try {
       if (editingBook) {
         await editBook(editingBook.id, { ...data, id: editingBook.id });
@@ -77,7 +91,7 @@ const BooksPage: React.FC = () => {
       fetchBooks();
     } catch (err) {
       console.error("Failed to save book:", err);
-      setError(editingBook ? "Failed to update book. Please try again." : "Failed to add book. Please try again.");
+      setError(err instanceof Error ? err.message : editingBook ? "Failed to update book." : "Failed to add book.");
     }
   };
 
