@@ -4,7 +4,6 @@ export interface Book {
   id: number;
   title: string;
   author: string;
-  isbn: string;
   year: number;
   genre: string;
   description: string;
@@ -33,7 +32,6 @@ const BookList: React.FC<BookListProps> = ({ books, onEdit, onDelete }) => {
           <tr className="border-b border-gray-200 bg-gray-50">
             <th className="px-6 py-3 font-medium text-gray-500">Title</th>
             <th className="px-6 py-3 font-medium text-gray-500">Author</th>
-            <th className="px-6 py-3 font-medium text-gray-500">ISBN</th>
             <th className="px-6 py-3 font-medium text-gray-500">Genre</th>
             <th className="px-6 py-3 font-medium text-gray-500">Year</th>
             <th className="px-6 py-3 text-right font-medium text-gray-500">Actions</th>
@@ -44,7 +42,6 @@ const BookList: React.FC<BookListProps> = ({ books, onEdit, onDelete }) => {
             <tr key={book.id} className="border-b border-gray-100 last:border-b-0">
               <td className="px-6 py-4 font-medium text-gray-900">{book.title}</td>
               <td className="px-6 py-4 text-gray-700">{book.author}</td>
-              <td className="px-6 py-4 text-gray-500">{book.isbn}</td>
               <td className="px-6 py-4">
                 <span className="inline-block rounded bg-indigo-100 px-2.5 py-0.5 text-xs font-medium text-indigo-700">
                   {book.genre}

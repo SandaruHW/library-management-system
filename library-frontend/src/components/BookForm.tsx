@@ -4,7 +4,6 @@ import { Book } from "./BookList";
 export interface BookFormData {
   title: string;
   author: string;
-  isbn: string;
   year: number;
   genre: string;
   description: string;
@@ -21,7 +20,6 @@ const BookForm: React.FC<BookFormProps> = ({ open, onClose, onSubmit, initialDat
   const [formData, setFormData] = useState<BookFormData>({
     title: "",
     author: "",
-    isbn: "",
     year: new Date().getFullYear(),
     genre: "",
     description: "",
@@ -32,7 +30,6 @@ const BookForm: React.FC<BookFormProps> = ({ open, onClose, onSubmit, initialDat
       setFormData({
         title: initialData.title,
         author: initialData.author,
-        isbn: initialData.isbn,
         year: initialData.year,
         genre: initialData.genre,
         description: initialData.description,
@@ -41,7 +38,6 @@ const BookForm: React.FC<BookFormProps> = ({ open, onClose, onSubmit, initialDat
       setFormData({
         title: "",
         author: "",
-        isbn: "",
         year: new Date().getFullYear(),
         genre: "",
         description: "",
@@ -49,8 +45,28 @@ const BookForm: React.FC<BookFormProps> = ({ open, onClose, onSubmit, initialDat
     }
   }, [initialData, open]);
 
+  const GENRES = [
+    "Fiction",
+    "Non-Fiction",
+    "Science Fiction",
+    "Fantasy",
+    "Mystery",
+    "Thriller",
+    "Biography",
+    "History",
+    "Science",
+    "Technology",
+    "Self-Help",
+    "Romance",
+    "Horror",
+    "Children's",
+    "Poetry",
+    "Drama",
+    "Other",
+  ];
+
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -123,18 +139,6 @@ const BookForm: React.FC<BookFormProps> = ({ open, onClose, onSubmit, initialDat
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700">ISBN</label>
-            <input
-              type="text"
-              name="isbn"
-              value={formData.isbn}
-              onChange={handleChange}
-              placeholder="Enter ISBN"
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-            />
-          </div>
-
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">Year</label>
@@ -149,14 +153,18 @@ const BookForm: React.FC<BookFormProps> = ({ open, onClose, onSubmit, initialDat
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">Genre</label>
-              <input
-                type="text"
+              <select
                 name="genre"
                 value={formData.genre}
                 onChange={handleChange}
-                placeholder="Enter genre"
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-              />
+                required
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              >
+                <option value="" disabled>Select genre</option>
+                {GENRES.map((g) => (
+                  <option key={g} value={g}>{g}</option>
+                ))}
+              </select>
             </div>
           </div>
 

@@ -6,7 +6,6 @@ const API_URL = "http://localhost:5217/api/books";
 export interface BookPayload {
   title: string;
   author: string;
-  isbn: string;
   year: number;
   genre: string;
   description: string;
